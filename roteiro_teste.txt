@@ -1,0 +1,46 @@
+Roteiro de Teste — Sistema de Impressão Distribuída (gRPC + Ricart-Agrawala + Lamport)
+
+Observação: execute os comandos a partir da raiz deste repositório.
+
+1) Pré‑requisitos
+- Python 3.10+
+- Dependências: grpcio, grpcio-tools
+
+2) Instalação
+- Instalar dependências:
+  python -m pip install -r requirements.txt
+
+- Gerar os stubs gRPC a partir do .proto:
+  python -m grpc_tools.protoc -I proto --python_out=distributed_printing --grpc_python_out=distributed_printing proto/printing.proto
+
+  Isso gera distributed_printing/printing_pb2.py e distributed_printing/printing_pb2_grpc.py.
+
+3) Subir os processos
+- Terminal 1 — Servidor de impressão “burro” (porta 50051):
+  python -m distributed_printing.server --port 50051
+
+- Terminal 2 — Cliente 1:
+  Automático:
+    python -m distributed_printing.client --id 1 --server localhost:50051 --port 50052 --clients localhost:50053,localhost:50054 --auto
+  Manual:
+    python -m distributed_printing.client --id 1 --server localhost:50051 --port 50052 --clients localhost:50053,localhost:50054
+
+- Terminal 3 — Cliente 2:
+  Automático:
+    python -m distributed_printing.client --id 2 --server localhost:50051 --port 50053 --clients localhost:50052,localhost:50054 --auto
+  Manual:
+    python -m distributed_printing.client --id 2 --server localhost:50051 --port 50053 --clients localhost:50052,localhost:50054
+
+- Terminal 4 — Cliente 3:
+  Automático:
+    python -m distributed_printing.client --id 3 --server localhost:50051 --port 50054 --clients localhost:50052,localhost:50053 --auto
+  Manual:
+    python -m distributed_printing.client --id 3 --server localhost:50051 --port 50054 --clients localhost:50052,localhost:50053
+
+4) Observações
+- Cada cliente precisa de uma porta única (ex.: 50052, 50053, 50054).
+- A lista --clients de cada cliente deve conter os endereços dos demais clientes (simétrica entre eles).
+- O servidor de impressão não participa do algoritmo; apenas imprime e responde.
+
+5) Tambem é possivel testar o projeto atraves  do arquivo "test_run.py" utilizando o comando:
+python .\test_run.py
